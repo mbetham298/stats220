@@ -1,0 +1,104 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+library(tidyverse)
+```
+
+```{css}
+@import url('https://fonts.googleapis.com/css2?family=Sour+Gummy&display=swap');
+
+body {
+    background-color: #8Ec15B;
+    color: #f1ecea;
+    font-family: 'Sour Gummy', cursive; 
+    font-size: 16px; /* Base font size */
+}
+
+h1 {
+    font-size: 28px;
+    color: #b6ca93; 
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 24px;
+    color: #435a12; 
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 20px;
+    color: #dce5d2; 
+}
+
+```
+
+```{r,echo=FALSE}
+csv_file <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOo0zi9AO4aHhwurAqWbqvGfTl1MHmvTnK3jDs7EkIhoWiirLNRp9mGJz-H4Cyca321XJzsjCJcGWa/pub?gid=522705941&single=true&output=csv"
+
+logged_data <- read_csv(csv_file)
+
+latest_data <-logged_data %>%
+  rename(model_car= 2, 
+         num_people=3,
+         multiple_cars= 4)
+
+model <- latest_data$model_car
+people <- latest_data$num_people
+cars <- latest_data$multiple_cars
+```
+
+## Insight on passengers in one car.
+```{r,echo=FALSE}
+min_passengers <- min(people, na.rm = TRUE)
+max_passengers <- max(people, na.rm = TRUE)
+mean_passengers <- mean(people, na.rm = TRUE) %>% round(0)
+paste("The minimum amount of passengers in one car was",min_passengers, 
+      "The maximum amount of paseengers in one car was",max_passengers,
+      "The average amount of passengers in one car was", mean_passengers)
+```
+
+## Did one family fit in one car?
+
+```{r,echo=FALSE}
+ggplot(latest_data, aes(x = cars, fill = cars)) +
+  geom_bar() +
+  scale_fill_manual(values = c("Yes" = "#b8d53d", "No" = "#187c19")) +
+  labs(title = "Families Driving in More Than One Car to Camp",
+       x = "Did whole family drive in one car?",
+       y = "Number of Families")
+```
+
+```{r,echo=FALSE}
+one_car <- length(which(cars == "Yes"))
+paste(one_car, "families could fit into one car")
+multiple_car <- length(which(cars == "No"))
+paste(multiple_car, "families couldn't fit into one car")
+```
+
+## Car model distribution
+
+```{r,echo=FALSE}
+latest_data %>%
+  ggplot() +
+  geom_bar(aes(x=model),fill="darkgreen") +
+  labs(title = "Car Model Distribution",
+       x = "Car Model Type",
+       y = "Count")
+```
+
+
+## Car Model vs If Family Fit In One Car
+```{r,echo=FALSE}
+ggplot(latest_data, aes(x = model_car, fill = multiple_cars)) +
+  geom_bar(position = "fill") +  # "fill" makes it a proportion-based stacked chart
+  scale_fill_manual(values = c("Yes" = "#b8d53d", "No" = "#187c19")) +
+  labs(title = "Car Model vs. Did whole family fit",
+       x = "Car Model Type",
+       y = "Proportion of Families")
+
+```
